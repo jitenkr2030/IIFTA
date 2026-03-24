@@ -12,6 +12,7 @@ import { AIAccountingLab } from '@/components/ai-lab/AIAccountingLab'
 import { ProjectPortfolio } from '@/components/portfolio/ProjectPortfolio'
 import { CertificationVerification } from '@/components/certification/CertificationVerification'
 import { JobMarketplace } from '@/components/marketplace/JobMarketplace'
+import { PartnerNetwork } from '@/components/partners/PartnerNetwork'
 import { 
   BookOpen, 
   Clock, 
@@ -27,7 +28,8 @@ import {
   Brain,
   Lightbulb,
   Code,
-  Briefcase
+  Briefcase,
+  Handshake
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -59,7 +61,7 @@ interface UpcomingDeadline {
 }
 
 export function StudentDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'programs' | 'ai-lab' | 'portfolio' | 'certificates' | 'jobs'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'programs' | 'ai-lab' | 'portfolio' | 'certificates' | 'jobs' | 'partners'>('overview')
   const [enrollments, setEnrollments] = useState([])
   const [selectedCourse, setSelectedCourse] = useState<any>(null)
   const [selectedQuiz, setSelectedQuiz] = useState<any>(null)
@@ -278,6 +280,13 @@ export function StudentDashboard() {
             >
               Jobs
             </Button>
+            <Button
+              variant={activeTab === 'partners' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('partners')}
+              size="sm"
+            >
+              Partners
+            </Button>
           </div>
 
           {activeTab === 'overview' && (
@@ -479,6 +488,10 @@ export function StudentDashboard() {
                       <Briefcase className="h-6 w-6 mb-2" />
                       Jobs
                     </Button>
+                    <Button variant="outline" className="h-20 flex-col" onClick={() => setActiveTab('partners')}>
+                      <Handshake className="h-6 w-6 mb-2" />
+                      Partners
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -503,6 +516,10 @@ export function StudentDashboard() {
 
           {activeTab === 'jobs' && (
             <JobMarketplace userRole={user?.role} />
+          )}
+
+          {activeTab === 'partners' && (
+            <PartnerNetwork userRole={user?.role} />
           )}
         </>
       )}
