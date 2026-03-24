@@ -11,6 +11,7 @@ import { QuizTaker } from '@/components/lms/QuizTaker'
 import { AIAccountingLab } from '@/components/ai-lab/AIAccountingLab'
 import { ProjectPortfolio } from '@/components/portfolio/ProjectPortfolio'
 import { CertificationVerification } from '@/components/certification/CertificationVerification'
+import { JobMarketplace } from '@/components/marketplace/JobMarketplace'
 import { 
   BookOpen, 
   Clock, 
@@ -25,7 +26,8 @@ import {
   BarChart3,
   Brain,
   Lightbulb,
-  Code
+  Code,
+  Briefcase
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -57,7 +59,7 @@ interface UpcomingDeadline {
 }
 
 export function StudentDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'programs' | 'ai-lab' | 'portfolio' | 'certificates'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'programs' | 'ai-lab' | 'portfolio' | 'certificates' | 'jobs'>('overview')
   const [enrollments, setEnrollments] = useState([])
   const [selectedCourse, setSelectedCourse] = useState<any>(null)
   const [selectedQuiz, setSelectedQuiz] = useState<any>(null)
@@ -269,6 +271,13 @@ export function StudentDashboard() {
             >
               Certificates
             </Button>
+            <Button
+              variant={activeTab === 'jobs' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('jobs')}
+              size="sm"
+            >
+              Jobs
+            </Button>
           </div>
 
           {activeTab === 'overview' && (
@@ -466,6 +475,10 @@ export function StudentDashboard() {
                       <Award className="h-6 w-6 mb-2" />
                       Certificates
                     </Button>
+                    <Button variant="outline" className="h-20 flex-col" onClick={() => setActiveTab('jobs')}>
+                      <Briefcase className="h-6 w-6 mb-2" />
+                      Jobs
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -486,6 +499,10 @@ export function StudentDashboard() {
 
           {activeTab === 'certificates' && (
             <CertificationVerification />
+          )}
+
+          {activeTab === 'jobs' && (
+            <JobMarketplace userRole={user?.role} />
           )}
         </>
       )}
