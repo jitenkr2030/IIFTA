@@ -1,0 +1,603 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  name            String?
+  password        String?
+  avatar          String?
+  phone           String?
+  role            UserRole  @default(STUDENT)
+  membershipTier  MembershipTier @default(FREE)
+  emailVerified   Boolean   @default(false)
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  enrollments     Enrollment[]
+  certificates    Certificate[]
+  projects        Project[]
+  jobApplications  JobApplication[]
+  assignmentSubmissions AssignmentSubmission[]
+  quizAttempts    QuizAttempt[]
+  mentorSessions  MentorSession[]
+  forumPosts      ForumPost[]
+  notifications   Notification[]
+  portfolio       Portfolio?
+  profile         StudentProfile?
+
+  @@map("users")
+}
+
+model StudentProfile {
+  id              String  @id @default(cuid())
+  userId          String  @unique
+  bio             String?
+  skills          String?
+  experience      String?
+  education       String?
+  location        String?
+  linkedinUrl     String?
+  githubUrl       String?
+  websiteUrl      String?
+  resumeUrl       String?
+  preferences     String? // JSON for preferences
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("student_profiles")
+}
+
+model CertificationProgram {
+  id              String    @id @default(cuid())
+  title           String
+  description     String
+  level           ProgramLevel
+  duration        Int       // in weeks
+  price           Float
+  thumbnail       String?
+  isActive        Boolean   @default(true)
+  requirements    String?   // JSON for requirements
+  learningPath    String?   // JSON for learning path
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  courses         Course[]
+  enrollments     Enrollment[]
+  certificates    Certificate[]
+
+  @@map("certification_programs")
+}
+
+model Course {
+  id              String    @id @default(cuid())
+  title           String
+  description     String
+  content         String?   // Rich text content
+  videoUrl        String?
+  duration        Int       // in minutes
+  order           Int
+  isPublished     Boolean   @default(false)
+  programId       String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  program         CertificationProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  lessons         Lesson[]
+  assignments     Assignment[]
+  quizzes         Quiz[]
+  progress        CourseProgress[]
+
+  @@map("courses")
+}
+
+model Lesson {
+  id              String    @id @default(cuid())
+  title           String
+  content         String    // Rich text content
+  videoUrl        String?
+  duration        Int       // in minutes
+  order           Int
+  courseId        String
+  isPreview       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  course          Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress        LessonProgress[]
+
+  @@map("lessons")
+}
+
+model Assignment {
+  id              String    @id @default(cuid())
+  title           String
+  description     String
+  instructions    String
+  dueDate         DateTime?
+  maxScore        Float     @default(100)
+  courseId        String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  course          Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  submissions     AssignmentSubmission[]
+
+  @@map("assignments")
+}
+
+model AssignmentSubmission {
+  id              String    @id @default(cuid())
+  assignmentId    String
+  studentId       String
+  content         String?
+  fileUrl         String?
+  score           Float?
+  feedback        String?
+  status          SubmissionStatus @default(PENDING)
+  submittedAt     DateTime  @default(now())
+  gradedAt        DateTime?
+
+  // Relations
+  assignment      Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  student         User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, studentId])
+  @@map("assignment_submissions")
+}
+
+model Quiz {
+  id              String    @id @default(cuid())
+  title           String
+  description     String?
+  timeLimit       Int?      // in minutes
+  maxScore        Float     @default(100)
+  passingScore    Float     @default(70)
+  courseId        String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  course          Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  questions       Question[]
+  attempts        QuizAttempt[]
+
+  @@map("quizzes")
+}
+
+model Question {
+  id              String      @id @default(cuid())
+  quizId          String
+  question        String
+  type            QuestionType
+  options         String?     // JSON for multiple choice options
+  correctAnswer   String
+  explanation     String?
+  points          Float       @default(1)
+  order           Int
+
+  // Relations
+  quiz            Quiz        @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  answers         Answer[]
+
+  @@map("questions")
+}
+
+model Answer {
+  id              String    @id @default(cuid())
+  questionId      String
+  attemptId       String
+  answer          String
+  isCorrect       Boolean
+  points          Float
+
+  // Relations
+  question        Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  attempt         QuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+
+  @@map("answers")
+}
+
+model QuizAttempt {
+  id              String    @id @default(cuid())
+  quizId          String
+  studentId       String
+  score           Float
+  maxScore        Float
+  passed          Boolean
+  startedAt       DateTime  @default(now())
+  completedAt     DateTime?
+
+  // Relations
+  quiz            Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  student         User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  answers         Answer[]
+
+  @@map("quiz_attempts")
+}
+
+model Enrollment {
+  id              String            @id @default(cuid())
+  userId          String
+  programId       String
+  status          EnrollmentStatus  @default(ACTIVE)
+  progress        Float             @default(0)
+  enrolledAt      DateTime          @default(now())
+  completedAt     DateTime?
+  expiresAt       DateTime?
+
+  // Relations
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  program         CertificationProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  courseProgress  CourseProgress[]
+
+  @@unique([userId, programId])
+  @@map("enrollments")
+}
+
+model CourseProgress {
+  id              String    @id @default(cuid())
+  enrollmentId    String
+  courseId        String
+  studentId       String
+  progress        Float     @default(0)
+  completed       Boolean   @default(false)
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  enrollment      Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  course          Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons         LessonProgress[]
+
+  @@unique([enrollmentId, courseId])
+  @@map("course_progress")
+}
+
+model LessonProgress {
+  id              String    @id @default(cuid())
+  courseProgressId String
+  lessonId        String
+  studentId       String
+  completed       Boolean   @default(false)
+  completedAt     DateTime?
+  watchTime       Int       @default(0) // in seconds
+
+  // Relations
+  courseProgress  CourseProgress @relation(fields: [courseProgressId], references: [id], onDelete: Cascade)
+  lesson          Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([courseProgressId, lessonId])
+  @@map("lesson_progress")
+}
+
+model Certificate {
+  id              String    @id @default(cuid())
+  userId          String
+  programId       String
+  certificateId   String    @unique
+  qrCode          String?
+  issuedAt        DateTime  @default(now())
+  verifiedAt      DateTime?
+  isRevoked       Boolean   @default(false)
+
+  // Relations
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  program         CertificationProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+
+  @@map("certificates")
+}
+
+model Project {
+  id              String    @id @default(cuid())
+  title           String
+  description     String
+  content         String?   // Rich text content
+  imageUrl        String?
+  projectUrl      String?
+  githubUrl       String?
+  tags            String?   // JSON array of tags
+  isPublished     Boolean   @default(false)
+  featured        Boolean   @default(false)
+  studentId       String
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  student         User      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("projects")
+}
+
+model Portfolio {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  bio             String?
+  skills          String?   // JSON array
+  experience      String?   // JSON array
+  education       String?   // JSON array
+  achievements    String?   // JSON array
+  isPublic        Boolean   @default(true)
+  customDomain    String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("portfolios")
+}
+
+model Job {
+  id              String    @id @default(cuid())
+  title           String
+  description     String
+  requirements    String?
+  location        String?
+  type            JobType   @default(FULL_TIME)
+  salary          String?
+  company         String
+  companyLogo     String?
+  applicationUrl  String?
+  featured        Boolean   @default(false)
+  isActive        Boolean   @default(true)
+  partnerId       String?   // Partner ID
+  expiresAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  partner         Partner?  @relation(fields: [partnerId], references: [id])
+  applications    JobApplication[]
+
+  @@map("jobs")
+}
+
+model JobApplication {
+  id              String            @id @default(cuid())
+  jobId           String
+  studentId       String
+  coverLetter     String?
+  resumeUrl       String?
+  status          ApplicationStatus @default(APPLIED)
+  appliedAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  // Relations
+  job             Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  student         User              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, studentId])
+  @@map("job_applications")
+}
+
+model Partner {
+  id              String    @id @default(cuid())
+  name            String
+  description     String?
+  logo            String?
+  website         String?
+  type            PartnerType
+  contactEmail    String
+  contactPhone    String?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  jobs            Job[]
+  mentorProfiles  MentorProfile[]
+
+  @@map("partners")
+}
+
+model MentorProfile {
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  partnerId       String?
+  bio             String
+  expertise       String    // JSON array of expertise areas
+  experience      String    // JSON array of experience
+  hourlyRate      Float?
+  availability    String?   // JSON for availability schedule
+  rating          Float     @default(0)
+  reviewCount     Int       @default(0)
+  isVerified      Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  partner         Partner?  @relation(fields: [partnerId], references: [id])
+  sessions        MentorSession[]
+
+  @@map("mentor_profiles")
+}
+
+model MentorSession {
+  id              String          @id @default(cuid())
+  mentorId        String
+  studentId       String
+  title           String
+  description     String?
+  scheduledFor    DateTime
+  duration        Int             // in minutes
+  status          SessionStatus   @default(SCHEDULED)
+  meetingUrl      String?
+  notes           String?
+  rating          Float?
+  feedback        String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  // Relations
+  mentor          MentorProfile   @relation(fields: [mentorId], references: [id])
+  student         User            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@map("mentor_sessions")
+}
+
+model ForumPost {
+  id              String    @id @default(cuid())
+  title           String
+  content         String
+  category        String
+  tags            String?   // JSON array
+  authorId        String
+  parentId        String?   // For replies
+  isPinned        Boolean   @default(false)
+  isLocked        Boolean   @default(false)
+  viewCount       Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  author          User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent          ForumPost? @relation("ForumReplies", fields: [parentId], references: [id])
+  replies         ForumPost[] @relation("ForumReplies")
+
+  @@map("forum_posts")
+}
+
+model Notification {
+  id              String          @id @default(cuid())
+  userId          String
+  title           String
+  message         String
+  type            NotificationType
+  isRead          Boolean         @default(false)
+  data            String?         // JSON for additional data
+  createdAt       DateTime        @default(now())
+
+  // Relations
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model Subscription {
+  id              String            @id @default(cuid())
+  userId          String            @unique
+  tier            MembershipTier
+  status          SubscriptionStatus @default(ACTIVE)
+  startDate       DateTime          @default(now())
+  endDate         DateTime?
+  amount          Float
+  currency        String            @default("USD")
+  paymentMethod   String?
+  autoRenew       Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@map("subscriptions")
+}
+
+// Enums
+enum UserRole {
+  STUDENT
+  MENTOR
+  ADMIN
+  PARTNER
+}
+
+enum MembershipTier {
+  FREE
+  BASIC
+  PRO
+  ELITE
+}
+
+enum ProgramLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum SubmissionStatus {
+  PENDING
+  GRADED
+  RETURNED
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  SHORT_ANSWER
+  ESSAY
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  SUSPENDED
+  CANCELLED
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  FREELANCE
+  INTERNSHIP
+}
+
+enum ApplicationStatus {
+  APPLIED
+  REVIEWING
+  SHORTLISTED
+  REJECTED
+  HIRED
+}
+
+enum PartnerType {
+  CA_FIRM
+  FINTECH_STARTUP
+  TRAINING_INSTITUTE
+  CORPORATE
+}
+
+enum SessionStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum NotificationType {
+  SYSTEM
+  COURSE
+  ASSIGNMENT
+  CERTIFICATE
+  JOB
+  MENTOR
+  PAYMENT
+  COMMUNITY
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PENDING
+}
