@@ -10,6 +10,7 @@ import { CourseViewer } from '@/components/lms/CourseViewer'
 import { QuizTaker } from '@/components/lms/QuizTaker'
 import { AIAccountingLab } from '@/components/ai-lab/AIAccountingLab'
 import { ProjectPortfolio } from '@/components/portfolio/ProjectPortfolio'
+import { CertificationVerification } from '@/components/certification/CertificationVerification'
 import { 
   BookOpen, 
   Clock, 
@@ -56,7 +57,7 @@ interface UpcomingDeadline {
 }
 
 export function StudentDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'programs' | 'ai-lab' | 'portfolio'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'programs' | 'ai-lab' | 'portfolio' | 'certificates'>('overview')
   const [enrollments, setEnrollments] = useState([])
   const [selectedCourse, setSelectedCourse] = useState<any>(null)
   const [selectedQuiz, setSelectedQuiz] = useState<any>(null)
@@ -261,6 +262,13 @@ export function StudentDashboard() {
             >
               Portfolio
             </Button>
+            <Button
+              variant={activeTab === 'certificates' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('certificates')}
+              size="sm"
+            >
+              Certificates
+            </Button>
           </div>
 
           {activeTab === 'overview' && (
@@ -454,6 +462,10 @@ export function StudentDashboard() {
                       <Code className="h-6 w-6 mb-2" />
                       Portfolio
                     </Button>
+                    <Button variant="outline" className="h-20 flex-col" onClick={() => setActiveTab('certificates')}>
+                      <Award className="h-6 w-6 mb-2" />
+                      Certificates
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -470,6 +482,10 @@ export function StudentDashboard() {
 
           {activeTab === 'portfolio' && (
             <ProjectPortfolio />
+          )}
+
+          {activeTab === 'certificates' && (
+            <CertificationVerification />
           )}
         </>
       )}
