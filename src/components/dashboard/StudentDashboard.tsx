@@ -13,6 +13,7 @@ import { ProjectPortfolio } from '@/components/portfolio/ProjectPortfolio'
 import { CertificationVerification } from '@/components/certification/CertificationVerification'
 import { JobMarketplace } from '@/components/marketplace/JobMarketplace'
 import { PartnerNetwork } from '@/components/partners/PartnerNetwork'
+import { MentorshipSystem } from '@/components/mentorship/MentorshipSystem'
 import { 
   BookOpen, 
   Clock, 
@@ -61,7 +62,7 @@ interface UpcomingDeadline {
 }
 
 export function StudentDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'programs' | 'ai-lab' | 'portfolio' | 'certificates' | 'jobs' | 'partners'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'programs' | 'ai-lab' | 'portfolio' | 'certificates' | 'jobs' | 'partners' | 'mentorship'>('overview')
   const [enrollments, setEnrollments] = useState([])
   const [selectedCourse, setSelectedCourse] = useState<any>(null)
   const [selectedQuiz, setSelectedQuiz] = useState<any>(null)
@@ -287,6 +288,13 @@ export function StudentDashboard() {
             >
               Partners
             </Button>
+            <Button
+              variant={activeTab === 'mentorship' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('mentorship')}
+              size="sm"
+            >
+              Mentorship
+            </Button>
           </div>
 
           {activeTab === 'overview' && (
@@ -492,6 +500,10 @@ export function StudentDashboard() {
                       <Handshake className="h-6 w-6 mb-2" />
                       Partners
                     </Button>
+                    <Button variant="outline" className="h-20 flex-col" onClick={() => setActiveTab('mentorship')}>
+                      <Users className="h-6 w-6 mb-2" />
+                      Mentorship
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -520,6 +532,10 @@ export function StudentDashboard() {
 
           {activeTab === 'partners' && (
             <PartnerNetwork userRole={user?.role} />
+          )}
+
+          {activeTab === 'mentorship' && (
+            <MentorshipSystem userRole={user?.role} />
           )}
         </>
       )}
