@@ -15,6 +15,7 @@ import { JobMarketplace } from '@/components/marketplace/JobMarketplace'
 import { PartnerNetwork } from '@/components/partners/PartnerNetwork'
 import { MentorshipSystem } from '@/components/mentorship/MentorshipSystem'
 import { MembershipSystem } from '@/components/membership/MembershipSystem'
+import { AnalyticsSystem } from '@/components/analytics/AnalyticsSystem'
 import { 
   BookOpen, 
   Clock, 
@@ -64,7 +65,7 @@ interface UpcomingDeadline {
 }
 
 export function StudentDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'programs' | 'ai-lab' | 'portfolio' | 'certificates' | 'jobs' | 'partners' | 'mentorship' | 'membership'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'programs' | 'ai-lab' | 'portfolio' | 'certificates' | 'jobs' | 'partners' | 'mentorship' | 'membership' | 'analytics'>('overview')
   const [enrollments, setEnrollments] = useState([])
   const [selectedCourse, setSelectedCourse] = useState<any>(null)
   const [selectedQuiz, setSelectedQuiz] = useState<any>(null)
@@ -304,6 +305,13 @@ export function StudentDashboard() {
             >
               Membership
             </Button>
+            <Button
+              variant={activeTab === 'analytics' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('analytics')}
+              size="sm"
+            >
+              Analytics
+            </Button>
           </div>
 
           {activeTab === 'overview' && (
@@ -517,6 +525,10 @@ export function StudentDashboard() {
                       <Crown className="h-6 w-6 mb-2" />
                       Membership
                     </Button>
+                    <Button variant="outline" className="h-20 flex-col" onClick={() => setActiveTab('analytics')}>
+                      <BarChart3 className="h-6 w-6 mb-2" />
+                      Analytics
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -553,6 +565,10 @@ export function StudentDashboard() {
 
           {activeTab === 'membership' && (
             <MembershipSystem userRole={user?.role} />
+          )}
+
+          {activeTab === 'analytics' && (
+            <AnalyticsSystem userRole={user?.role} />
           )}
         </>
       )}
