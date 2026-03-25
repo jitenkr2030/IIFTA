@@ -16,6 +16,7 @@ import { PartnerNetwork } from '@/components/partners/PartnerNetwork'
 import { MentorshipSystem } from '@/components/mentorship/MentorshipSystem'
 import { MembershipSystem } from '@/components/membership/MembershipSystem'
 import { AnalyticsSystem } from '@/components/analytics/AnalyticsSystem'
+import { NotificationSystem } from '@/components/notifications/NotificationSystem'
 import { 
   BookOpen, 
   Clock, 
@@ -33,7 +34,8 @@ import {
   Code,
   Briefcase,
   Handshake,
-  Crown
+  Crown,
+  Bell
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -65,7 +67,7 @@ interface UpcomingDeadline {
 }
 
 export function StudentDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'programs' | 'ai-lab' | 'portfolio' | 'certificates' | 'jobs' | 'partners' | 'mentorship' | 'membership' | 'analytics'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'programs' | 'ai-lab' | 'portfolio' | 'certificates' | 'jobs' | 'partners' | 'mentorship' | 'membership' | 'analytics' | 'notifications'>('overview')
   const [enrollments, setEnrollments] = useState([])
   const [selectedCourse, setSelectedCourse] = useState<any>(null)
   const [selectedQuiz, setSelectedQuiz] = useState<any>(null)
@@ -312,6 +314,13 @@ export function StudentDashboard() {
             >
               Analytics
             </Button>
+            <Button
+              variant={activeTab === 'notifications' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('notifications')}
+              size="sm"
+            >
+              Notifications
+            </Button>
           </div>
 
           {activeTab === 'overview' && (
@@ -529,6 +538,10 @@ export function StudentDashboard() {
                       <BarChart3 className="h-6 w-6 mb-2" />
                       Analytics
                     </Button>
+                    <Button variant="outline" className="h-20 flex-col" onClick={() => setActiveTab('notifications')}>
+                      <Bell className="h-6 w-6 mb-2" />
+                      Notifications
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -569,6 +582,10 @@ export function StudentDashboard() {
 
           {activeTab === 'analytics' && (
             <AnalyticsSystem userRole={user?.role} />
+          )}
+
+          {activeTab === 'notifications' && (
+            <NotificationSystem userRole={user?.role} />
           )}
         </>
       )}
