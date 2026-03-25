@@ -192,3 +192,4 @@ Use 'kill 664' to stop it.
 ✓ Compiled in 110ms
  GET / 200 in 260ms (compile: 149ms, render: 111ms)
 ✓ Compiled in 102ms
+✓ Compiled in 99ms

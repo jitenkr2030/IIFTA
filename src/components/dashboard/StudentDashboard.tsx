@@ -14,6 +14,7 @@ import { CertificationVerification } from '@/components/certification/Certificat
 import { JobMarketplace } from '@/components/marketplace/JobMarketplace'
 import { PartnerNetwork } from '@/components/partners/PartnerNetwork'
 import { MentorshipSystem } from '@/components/mentorship/MentorshipSystem'
+import { MembershipSystem } from '@/components/membership/MembershipSystem'
 import { 
   BookOpen, 
   Clock, 
@@ -30,7 +31,8 @@ import {
   Lightbulb,
   Code,
   Briefcase,
-  Handshake
+  Handshake,
+  Crown
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -62,7 +64,7 @@ interface UpcomingDeadline {
 }
 
 export function StudentDashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'programs' | 'ai-lab' | 'portfolio' | 'certificates' | 'jobs' | 'partners' | 'mentorship'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'programs' | 'ai-lab' | 'portfolio' | 'certificates' | 'jobs' | 'partners' | 'mentorship' | 'membership'>('overview')
   const [enrollments, setEnrollments] = useState([])
   const [selectedCourse, setSelectedCourse] = useState<any>(null)
   const [selectedQuiz, setSelectedQuiz] = useState<any>(null)
@@ -295,6 +297,13 @@ export function StudentDashboard() {
             >
               Mentorship
             </Button>
+            <Button
+              variant={activeTab === 'membership' ? 'default' : 'ghost'}
+              onClick={() => setActiveTab('membership')}
+              size="sm"
+            >
+              Membership
+            </Button>
           </div>
 
           {activeTab === 'overview' && (
@@ -504,6 +513,10 @@ export function StudentDashboard() {
                       <Users className="h-6 w-6 mb-2" />
                       Mentorship
                     </Button>
+                    <Button variant="outline" className="h-20 flex-col" onClick={() => setActiveTab('membership')}>
+                      <Crown className="h-6 w-6 mb-2" />
+                      Membership
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -536,6 +549,10 @@ export function StudentDashboard() {
 
           {activeTab === 'mentorship' && (
             <MentorshipSystem userRole={user?.role} />
+          )}
+
+          {activeTab === 'membership' && (
+            <MembershipSystem userRole={user?.role} />
           )}
         </>
       )}
